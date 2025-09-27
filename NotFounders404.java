@@ -21,26 +21,31 @@ public class NotFounders404 extends Bot {
     public void run() {
         // Repeat while the bot is running
         while (isRunning()) {
-            forward(100);
-            turnGunLeft(360);
-            back(100);
-            turnGunLeft(360);
+            // Tell the game that when we take move, we'll also want to turn right... a lot
+            setTurnRight(10_000);
+            // Limit our speed to 5
+            setMaxSpeed(5);
+            // Start moving (and turning)
+            forward(10_000);
         }
     }
 
     // We saw another bot -> fire!
     @Override
     public void onScannedBot(ScannedBotEvent e) {
-        fire(1);
+        fire(3);
     }
 
     // We were hit by a bullet -> turn perpendicular to the bullet
     @Override
     public void onHitByBullet(HitByBulletEvent e) {
-        // Calculate the bearing to the direction of the bullet
-        var bearing = calcBearing(e.getBullet().getDirection());
-
-        // Turn 90 degrees to the bullet direction based on the bearing
-        turnRight(90 - bearing);
+        var direction = directionTo(e.getX(), e.getY());
+        var bearing = calcBearing(direction);
+        if (bearing > -10 && bearing < 10) {
+            fire(3);
+        }
+        if (e.isRammed()) {
+            turnRight(10);
+        }
     }
 }
