@@ -1,0 +1,13 @@
+{
+  "name": "404-not-founders",
+  "version": "1.0",
+  "authors": [
+    "Brian Felgate",
+    "Jeremia Fourie",
+    "Jade Adam Riley",
+    "Daniel Scholtz"
+  ],
+  "homepage": "",
+  "platform": "JVM",
+  "programmingLang": "Java 11"
+}
