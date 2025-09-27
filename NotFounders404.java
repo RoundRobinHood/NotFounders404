@@ -28,50 +28,38 @@ public class NotFounders404 extends Bot {
   public double TargetBearing(BotFind find) {
     var bulletSpeed = 17; // assume fire(1)
     var botSpeed = find.moveSpeed;
-    var turnNumber = getTurnNumber();
 
-    var dirTo = directionTo(find.x, find.y);
-    
-    var botX = Math.cos(dirTo);
-    var botY = Math.sin(dirTo);
+    var turns = 1.0 * getTurnNumber() - find.turnNumber;
 
-    var rotX = -botY;
-    var rotY = botX;
+    var new_x = find.x + Math.cos(find.moveDirection) * find.moveSpeed * turns;
+    var new_y = find.y + Math.cos(find.moveDirection) * find.moveSpeed * turns;
 
-    var movX = Math.cos(find.moveDirection);
-    var movY = Math.sin(find.moveDirection);
+    var dist = distanceTo(new_x, new_y);
 
-    var desiredBearing = Math.atan2(bulletSpeed, botSpeed);
+    turns = Math.floor(dist / 17);
 
-    // Dot product check
-    if(rotX * movX + rotY * movY > 0) {
-      desiredBearing = -desiredBearing;
-    }
+    new_x = new_x + Math.cos(find.moveDirection) * find.moveSpeed * turns;
+    new_y = new_y + Math.sin(find.moveDirection) * find.moveSpeed * turns;
 
-    var bearing = calcGunBearing(directionTo(find.x, find.y));
+    var bearing = calcGunBearing(directionTo(new_x, new_y));
 
-    return desiredBearing - bearing;
+    return bearing;
   }
 
   // Called when a new round is started -> initialize and do some movement
   @Override
   public void run() {
     setRadarTurnRate(45);
+    setTurnRate(10);
     // Repeat while the bot is running
     while (isRunning()) {
-      // Tell the game that when we take move, we'll also want to turn right... a lot
-      setTurnRight(10_000);
       // Limit our speed to 5
       setTargetSpeed(5);
 
       if(bot != null) {
-        var bearing = -TargetBearing(bot);
+        var bearing = TargetBearing(bot); 
         System.out.println(bearing);
-        if(Math.abs(bearing) > 20) {
-          setGunTurnRate(Math.signum(bearing) * 20);
-        } else {
-          setGunTurnRate(bearing);
-        }
+        setGunTurnRate(bearing - 10);
         if(Math.abs(bearing) < 5) {
           fire(1);
           continue;
@@ -91,10 +79,12 @@ public class NotFounders404 extends Bot {
     botFind.y = e.getY();
     botFind.moveDirection = e.getDirection();
     botFind.moveSpeed = e.getSpeed();
+    botFind.turnNumber = getTurnNumber();
     
     botFind.distance = distanceTo(botFind.x, botFind.y);
 
     if(bot == null || bot.botId == botFind.botId || bot.distance > botFind.distance) {
+      System.out.printf("Scanned: %d\n", botFind.turnNumber);
       bot = botFind;
     }
   }
